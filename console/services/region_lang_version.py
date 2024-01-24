@@ -1,3 +1,5 @@
+import re
+
 from console.repositories.app_config import compile_env_repo
 
 from www.apiclient.regionapi import RegionInvokeApi
@@ -35,6 +37,16 @@ class RegionLongVersion(object):
             return use_components
         region_api.delete_lang_version(eid, region_id, data)
         return ""
+
+    def is_valid_version(self, version_str):
+        pattern = r'^[a-z0-9]+(\.[0-9a-zA-Z-]+)*$'
+        if len(version_str) > 64:
+            return False
+        return bool(re.match(pattern, version_str))
+
+    def is_valid_image(self, image_name):
+        pattern = r'^[a-z0-9]+([._-][a-z0-9]+)*(\/[a-z0-9]+([._-][a-z0-9]+)*)*(\:[a-zA-Z0-9]+([._-][a-zA-Z0-9]+)*)?$'
+        return bool(re.match(pattern, image_name))
 
 
 region_lang_version = RegionLongVersion()

@@ -435,11 +435,15 @@ class EnterpriseRegionLangVersion(JWTAuthApiView):
         version = request.data.get("version", "")
         event_id = request.data.get("event_id", "")
         file_name = request.data.get("file_name", "")
-        if ' ' in version:
+        if not region_lang_version.is_valid_version(version):
             data = {"code": 400, "msg": "version format mistake",
                     "msg_show": "版本号格式不正确"}
             return Response(data, status=400)
-        extensions = ['zip', 'war', 'jar', 'tar', 'tar.gz', 'rar']
+        if (language == "net_runtime" or language == "net_compiler") and not region_lang_version.is_valid_image(file_name):
+            data = {"code": 400, "msg": "image name format mistake",
+                    "msg_show": "镜像格式不正确"}
+            return Response(data, status=400)
+        extensions = ['jar', 'tar.gz']
         if any(file_name.endswith(ext) for ext in extensions) or language == "net_runtime" or language == "net_compiler":
             data = region_lang_version.create_long_version(enterprise_id, region_id, language, version, event_id, file_name)
             if data.get("bean") == "exist":
@@ -448,7 +452,7 @@ class EnterpriseRegionLangVersion(JWTAuthApiView):
             result = general_message(200, "success", "添加成功")
             return Response(result, status=status.HTTP_200_OK)
         else:
-            data = {"code": 400, "msg": "package format mistake", "msg_show": "文件上传格式不正确，支持zip, war, jar, tar, tar.gz, rar"}
+            data = {"code": 400, "msg": "package format mistake", "msg_show": "文件上传格式不正确，支持jar, tar.gz"}
             return Response(data, status=400)
 
     def put(self, request, enterprise_id, region_id, *args, **kwargs):
